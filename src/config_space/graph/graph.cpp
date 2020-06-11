@@ -1,0 +1,413 @@
+#include "config_space/graph/graph.h"
+
+#include <algorithm>
+
+
+using namespace config_space::graph;
+
+
+
+
+Graph::Graph() :
+	
+	m_nodesStorage( new Node[ roadmap::capacity ] ),
+
+	m_freeNodePos( 0 ),
+
+	m_nodesInvolved( 0 )
+
+{}
+
+
+
+Graph::~Graph()
+{
+	delete[] m_nodesStorage;
+}
+
+
+
+NodeId Graph::insertNode( const config_space::Point & config )
+{
+
+	if ( getNodesAmount() > roadmap::capacity )
+	{
+
+		while ( true )
+		{
+			; /* в графе больше нет свободных мест для вершин */
+		}
+
+	}
+	
+
+	m_nodesStorage[ m_freeNodePos ].m_config = config;
+	m_nodesStorage[ m_freeNodePos ].m_isNodeInserted = true;
+
+	NodeId addedNodePos = m_freeNodePos;
+
+	m_nodesInvolved++;
+
+	updateAvailableIndex();
+
+	return addedNodePos;
+
+}
+
+
+/*
+void Graph::updateAvailableIndex()
+{
+
+	static const uint16_t indexBorder = roadmap::capacity - 2;
+
+	if ( m_freeNodePos > indexBorder )
+	{
+
+		m_freeNodePos = roadmap::capacity;
+
+	}
+
+	uint16_t possiblePos= m_freeNodePos + 1;
+
+	while ( possiblePos != roadmap::capacity )
+	{
+
+		if ( ! isNodeInGraph( possiblePos ) )
+		{
+			m_freeNodePos = possiblePos;
+
+			return;
+		}
+
+		possiblePos++;
+
+	}
+
+	m_freeNodePos = possiblePos;
+
+}
+
+
+
+
+void Graph::verifyAvailableIndex( NodeId testingNodePos )
+{
+
+	if ( testingNodePos < m_freeNodePos )
+	{
+		m_freeNodePos = testingNodePos;
+	}
+
+}
+*/
+
+
+
+
+void Graph::decreaseFreeEdges( uint16_t nodePos )
+{
+
+	m_nodesStorage[ nodePos ].m_curFreeEdge++;
+
+}
+
+
+
+const config_space::Point & Graph::getNodeConfig( NodeId nodePos ) const
+{
+	return m_nodesStorage[ nodePos ].m_config;
+}
+
+
+
+
+uint16_t Graph::getNodesAmount() const
+{
+	return ( m_nodesInvolved > m_freeNodePos ? m_nodesInvolved : m_freeNodePos );
+}
+
+
+
+
+bool Graph::hasNodeFreeEdge( NodeId nodePos ) const
+{
+	return ( m_nodesStorage[ nodePos ].m_curFreeEdge < roadmap::edges_limit );
+}
+
+
+
+
+uint8_t Graph::getAmountFreeEdges( NodeId nodePos ) const
+{
+	return ( roadmap::edges_limit - m_nodesStorage[ nodePos ].m_amountEdgesConnected );
+}
+
+
+
+
+
+
+
+NodeId Graph::getNodeId( NodeId nodePos, EdgeId edgePos ) const
+{
+	return m_nodesStorage[ nodePos ].edges[ edgePos ];
+}
+
+
+
+uint16_t Graph::getNodesInArea( NodeId nodePos ) const
+{
+
+	return m_nodesStorage[ nodePos ].m_nodesInArea;
+
+}
+
+
+
+
+bool Graph::isNodeInserted( NodeId nodePos ) const
+{
+	return m_nodesStorage[ nodePos ].m_isNodeInserted;
+}
+
+
+
+
+bool Graph::isNodeInGraph( uint16_t nodePos ) const
+{
+	return ( m_nodesStorage[ nodePos ].m_amountEdgesConnected != 0 );  
+}
+
+
+
+
+void Graph::reset()
+{
+
+	uint16_t correctNodesLimit = ( m_freeNodePos > m_nodesInvolved ) ? 
+		m_freeNodePos : m_nodesInvolved;
+
+	for ( NodeId curNodePos = 0; curNodePos != correctNodesLimit; curNodePos++ )
+	{
+
+		m_nodesStorage[ curNodePos ].reset();
+
+	}
+
+
+	m_freeNodePos = 0;
+
+	m_nodesInvolved = 0;
+
+}
+
+
+
+
+uint16_t Graph::getNodeAmountEdges( NodeId nodePos ) const
+{
+	return m_nodesStorage[ nodePos ].m_amountEdgesConnected;
+}
+
+
+
+
+void Graph::verifyFreeEdgePos( NodeId nodePos, EdgeId testingEdge )
+{
+
+	Node & node = m_nodesStorage[ nodePos ];
+
+	if ( testingEdge < node.m_curFreeEdge )
+	{
+		node.m_curFreeEdge = testingEdge;
+	}
+
+}
+
+
+
+void Graph::findFreeEdgePos( NodeId nodePos )
+{
+	static const uint8_t border = roadmap::edges_limit - 2;
+
+
+	Node & node = m_nodesStorage[ nodePos ];	
+
+	if ( node.m_curFreeEdge > border )
+	{
+		node.m_curFreeEdge = roadmap::edges_limit;
+
+		return;
+	}
+
+
+	uint8_t possiblePos = node.m_curFreeEdge + 1;
+
+	while ( possiblePos != roadmap::edges_limit )
+	{
+
+		if ( node.edges[ possiblePos ] == UINT16_MAX )
+		{
+			node.m_curFreeEdge = possiblePos;
+
+			return;
+		}
+
+		possiblePos++;
+
+	}
+
+	node.m_curFreeEdge = roadmap::edges_limit;
+
+}
+
+
+void Graph::addEdge( NodeId node1Pos, NodeId node2Pos )
+{
+
+	Node & node1 =  m_nodesStorage[ node1Pos ];
+	Node & node2 =  m_nodesStorage[ node2Pos ];
+
+
+	if ( ( node1.m_curFreeEdge == roadmap::edges_limit ) ||
+		( node2.m_curFreeEdge == roadmap::edges_limit ) )
+	{
+		while ( true )
+		{
+			; /* один из узлов уже имеет максимальное количество рёбер */
+		}
+	}
+
+	
+	uint8_t freeEdgeNode1 = node1.m_curFreeEdge;
+	uint8_t freeEdgeNode2 = node2.m_curFreeEdge;
+
+	node1.edges[ freeEdgeNode1 ] = node2Pos;
+	node1.m_amountEdgesConnected++;
+	node2.m_orderConnection[ freeEdgeNode2 ] = freeEdgeNode1;
+
+	node2.edges[ freeEdgeNode2 ] = node1Pos;
+	node2.m_amountEdgesConnected++;
+	node1.m_orderConnection[ freeEdgeNode1 ] = freeEdgeNode2;
+
+	findFreeEdgePos( node1Pos );
+	findFreeEdgePos( node2Pos );
+
+}
+
+
+
+void Graph::removeEdge( NodeId nodePos, EdgeId edgePos )
+{
+
+	Node & node = m_nodesStorage[ nodePos ];
+
+	EdgeId edgeNeighbor = node.m_orderConnection[ edgePos ];
+
+	NodeId neighborPos = node.edges[ edgePos ];
+
+	Node & nodeNeighbor = m_nodesStorage[ neighborPos ]; 
+
+	node.edges[ edgePos ] = UINT16_MAX;
+	node.m_amountEdgesConnected--;
+	node.m_orderConnection[ edgePos ] = UINT8_MAX; 
+
+	nodeNeighbor.edges[ edgeNeighbor ] = UINT16_MAX; 
+	nodeNeighbor.m_amountEdgesConnected--;
+	nodeNeighbor.m_orderConnection[ edgeNeighbor ] = UINT8_MAX;
+
+	verifyFreeEdgePos( nodePos, edgePos );
+	verifyFreeEdgePos( neighborPos, edgeNeighbor );
+
+}
+
+
+
+void Graph::removeNode( NodeId nodePos )
+{
+
+	Node & node = m_nodesStorage[ nodePos ];
+
+	NodeId checkingNodePos = nodePos;
+
+	if ( isNodeInGraph( nodePos ) )
+	{
+		
+		for ( uint8_t curEdge = 0; curEdge != roadmap::edges_limit; curEdge++ )
+		{
+
+			NodeId neighborId = node.edges[ curEdge ];
+
+			if ( neighborId  != UINT16_MAX )
+			{
+				removeEdge( nodePos, curEdge );
+
+				if ( ( ! isNodeInGraph( neighborId  ) ) && ( neighborId < checkingNodePos ) )
+				{
+					checkingNodePos = neighborId;
+				}
+			}
+
+		}
+
+		node.m_amountEdgesConnected = 0;
+	}
+
+	
+	node.m_curFreeEdge = 0;
+
+	node.m_nodesInArea = 0;
+
+	node.m_isNodeInserted = false;
+
+	m_nodesInvolved--;
+
+	verifyAvailableIndex( checkingNodePos );
+
+}
+
+
+
+void Graph::updateAvailableIndex()
+{
+
+	static const uint16_t indexBorder = roadmap::capacity - 2;
+
+	if ( m_freeNodePos > indexBorder )
+	{
+		m_freeNodePos = roadmap::capacity;
+		return;
+	}
+
+	uint16_t possiblePos= m_freeNodePos + 1;
+
+	while ( possiblePos < roadmap::capacity )
+	{
+
+		if ( ! isNodeInserted( possiblePos ) )
+		{
+			m_freeNodePos = possiblePos;
+
+			return;
+		}
+
+		possiblePos++;
+
+	}
+
+	m_freeNodePos = possiblePos;
+
+}
+
+
+
+void Graph::verifyAvailableIndex( NodeId testingNodePos )
+{
+
+	if ( testingNodePos < m_freeNodePos )
+	{
+		m_freeNodePos = testingNodePos;
+	}
+
+}
