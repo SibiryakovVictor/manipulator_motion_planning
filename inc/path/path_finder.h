@@ -31,13 +31,9 @@ namespace motion_planner
 
             config_space::graph::shortest_path::Astar m_pathFinder;
 
-            config_space::Point m_start = m_roadmap.m_graph.getNodeConfig( 0 );
-            config_space::Point m_goal = m_roadmap.m_graph.getNodeConfig( 1 );
+            float m_refPathLength = 0.f;
 
-            float m_refDist = 0.f;
-
-            void reinitializeRoadmap( const config_space::Point & start, 
-                const config_space::Point & goal );
+            void reinitializeRoadmap();
 
 
         };

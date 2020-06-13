@@ -69,3 +69,12 @@ void Point::alignToGrid( const float gridSize )
 
 }
 
+
+
+bool config_space::operator==( const Point & p1, const Point & p2 )
+{
+    static const float threshold_points_equal = 0.01f;
+
+    return Point::calcDistance( p1, p2 ) < threshold_points_equal;
+}
+

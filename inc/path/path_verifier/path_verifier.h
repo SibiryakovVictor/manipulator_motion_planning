@@ -45,7 +45,7 @@ namespace motion_planner
 
             path::PathElement checkEdgesForCollision( const path::PathTraversal & path );
 
-
+            
 
 
         private:
@@ -62,11 +62,10 @@ namespace motion_planner
             const config_space::graph::IEdgesList & m_edgesList;
 
 
+            bool isConfigCorrect( const config_space::Point & conf );
+
             bool isSegmentValid( const config_space::Segment & segment, const float pointsCheck );
 
-            bool isConfigValid( const config_space::Point & config );
-
-            bool isConfigCorrect( const config_space::Point & conf );
 
             bool checkManipVsManip( uint16_t id1, uint16_t id2 ) const;
             bool checkManipVsObst( uint16_t manipId, uint16_t obstId ) const;

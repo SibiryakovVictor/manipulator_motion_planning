@@ -18,9 +18,9 @@ namespace roadmap
 
     const uint16_t init_amount_nodes = 120;
 
-    const float radius_search_nn = 0.45f;
-    const float radius_generation = 0.6f;
-    const float generation_param = 0.225f;
+    const float radius_search_nn = 0.9f;
+    const float radius_generation = 1.2f;
+    const float generation_param = 0.45f;
     const float radius_limit_nn =
         static_cast< float >( conf_space_dims ) * std::powf( radius_search_nn, 2.f );
 

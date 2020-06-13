@@ -34,9 +34,6 @@ namespace motion_planner
 
         RoadmapController & m_roadmap;
 
-        config_space::Point m_start = m_roadmap.m_graph.getNodeConfig( 0 );
-        config_space::Point m_goal = m_roadmap.m_graph.getNodeConfig( 1 );
-
         uint16_t m_attempts = 0;
 
         void removeRandomNodes( uint16_t amountNodes );

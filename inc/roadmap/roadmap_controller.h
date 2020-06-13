@@ -45,13 +45,21 @@ namespace motion_planner
 								const config_space::Point & goalConfig );
 
 
+		const config_space::Point & getStart() const;
+		const config_space::Point & getGoal() const;
+
+
 		const config_space::graph::INodesList & getNodesList() const;
 		const config_space::graph::IEdgesList & getEdgesList() const;
 
+
 		void reset();
 
-
 	private:
+
+		config_space::Point m_start;
+
+		config_space::Point m_goal;
 
 		config_space::graph::Graph m_graph;
 

@@ -9,25 +9,23 @@ using namespace motion_planner::path;
 
 Path & PathTraversal::getPathStorage()
 {
-
     return m_path;
-
 }
 
 
 
 
-void PathTraversal::setPathLength( uint16_t pathLength )
+void PathTraversal::setPointsAmount( uint16_t pathLength )
 {
-	m_pathLength = pathLength;
+	m_pointsAmount = pathLength;
 }
 
 
 
 
-uint16_t PathTraversal::getPathLength() const
+uint16_t PathTraversal::getPointsAmount() const
 {
-	return m_pathLength;
+	return m_pointsAmount;
 }
 
 
@@ -43,7 +41,7 @@ float PathTraversal::getStep() const
 
 bool PathTraversal::isPathPassed() const
 {
-	return ( m_curPoint > m_pathLength - 2 );
+	return ( m_curPoint > m_pointsAmount - 2 );
 }
 
 
@@ -56,9 +54,9 @@ config_space::Point PathTraversal::getNextPointPath() const
 
 		m_curPoint++;
 
-		if ( m_curPoint > ( m_pathLength - 2 ) )
+		if ( m_curPoint > ( m_pointsAmount - 2 ) )
 		{
-			m_curPoint = m_pathLength - 1;
+			m_curPoint = m_pointsAmount - 1;
 
 			return m_trajIt.end();
 		}
@@ -97,9 +95,9 @@ void PathTraversal::reset()
 {
 
 	PathElement fillElem{ UINT16_MAX, UINT8_MAX };
-	std::fill( m_path.sections, m_path.sections + m_pathLength, fillElem );
+	std::fill( m_path.sections, m_path.sections + m_pointsAmount, fillElem );
 
-	m_pathLength = 0;
+	m_pointsAmount = 0;
 
 	m_curPoint = 0;
 

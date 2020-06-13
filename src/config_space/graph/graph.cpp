@@ -30,7 +30,7 @@ Graph::~Graph()
 NodeId Graph::insertNode( const config_space::Point & config )
 {
 
-	if ( getNodesAmount() > roadmap::capacity )
+	if ( getNodesAmount() > ( roadmap::capacity - 2 ) )
 	{
 
 		while ( true )
@@ -40,8 +40,8 @@ NodeId Graph::insertNode( const config_space::Point & config )
 
 	}
 	
-
 	m_nodesStorage[ m_freeNodePos ].m_config = config;
+
 	m_nodesStorage[ m_freeNodePos ].m_isNodeInserted = true;
 
 	NodeId addedNodePos = m_freeNodePos;
@@ -51,57 +51,7 @@ NodeId Graph::insertNode( const config_space::Point & config )
 	updateAvailableIndex();
 
 	return addedNodePos;
-
 }
-
-
-/*
-void Graph::updateAvailableIndex()
-{
-
-	static const uint16_t indexBorder = roadmap::capacity - 2;
-
-	if ( m_freeNodePos > indexBorder )
-	{
-
-		m_freeNodePos = roadmap::capacity;
-
-	}
-
-	uint16_t possiblePos= m_freeNodePos + 1;
-
-	while ( possiblePos != roadmap::capacity )
-	{
-
-		if ( ! isNodeInGraph( possiblePos ) )
-		{
-			m_freeNodePos = possiblePos;
-
-			return;
-		}
-
-		possiblePos++;
-
-	}
-
-	m_freeNodePos = possiblePos;
-
-}
-
-
-
-
-void Graph::verifyAvailableIndex( NodeId testingNodePos )
-{
-
-	if ( testingNodePos < m_freeNodePos )
-	{
-		m_freeNodePos = testingNodePos;
-	}
-
-}
-*/
-
 
 
 
@@ -124,7 +74,7 @@ const config_space::Point & Graph::getNodeConfig( NodeId nodePos ) const
 
 uint16_t Graph::getNodesAmount() const
 {
-	return ( m_nodesInvolved > m_freeNodePos ? m_nodesInvolved : m_freeNodePos );
+	return m_nodesInvolved;
 }
 
 
@@ -156,15 +106,6 @@ NodeId Graph::getNodeId( NodeId nodePos, EdgeId edgePos ) const
 
 
 
-uint16_t Graph::getNodesInArea( NodeId nodePos ) const
-{
-
-	return m_nodesStorage[ nodePos ].m_nodesInArea;
-
-}
-
-
-
 
 bool Graph::isNodeInserted( NodeId nodePos ) const
 {
@@ -191,7 +132,7 @@ void Graph::reset()
 	for ( NodeId curNodePos = 0; curNodePos != correctNodesLimit; curNodePos++ )
 	{
 
-		m_nodesStorage[ curNodePos ].reset();
+		m_nodesStorage[ curNodePos ].resetFull();
 
 	}
 
@@ -311,14 +252,29 @@ void Graph::removeEdge( NodeId nodePos, EdgeId edgePos )
 
 	node.edges[ edgePos ] = UINT16_MAX;
 	node.m_amountEdgesConnected--;
-	node.m_orderConnection[ edgePos ] = UINT8_MAX; 
+	node.m_orderConnection[ edgePos ] = UINT8_MAX;
+
+	if ( ( node.m_amountEdgesConnected == 0 ) && ( nodePos > 1 ) )
+	{
+		resetNodeNotConn( nodePos );
+	}
+	else
+	{
+		verifyFreeEdgePos( nodePos, edgePos );
+	}
 
 	nodeNeighbor.edges[ edgeNeighbor ] = UINT16_MAX; 
 	nodeNeighbor.m_amountEdgesConnected--;
 	nodeNeighbor.m_orderConnection[ edgeNeighbor ] = UINT8_MAX;
 
-	verifyFreeEdgePos( nodePos, edgePos );
-	verifyFreeEdgePos( neighborPos, edgeNeighbor );
+	if ( ( nodeNeighbor.m_amountEdgesConnected == 0 ) && ( neighborPos > 1 ) )
+	{
+		resetNodeNotConn( neighborPos );
+	}
+	else
+	{
+		verifyFreeEdgePos( neighborPos, edgeNeighbor );
+	}
 
 }
 
@@ -329,41 +285,25 @@ void Graph::removeNode( NodeId nodePos )
 
 	Node & node = m_nodesStorage[ nodePos ];
 
-	NodeId checkingNodePos = nodePos;
-
 	if ( isNodeInGraph( nodePos ) )
 	{
-		
 		for ( uint8_t curEdge = 0; curEdge != roadmap::edges_limit; curEdge++ )
 		{
-
 			NodeId neighborId = node.edges[ curEdge ];
 
 			if ( neighborId  != UINT16_MAX )
 			{
 				removeEdge( nodePos, curEdge );
-
-				if ( ( ! isNodeInGraph( neighborId  ) ) && ( neighborId < checkingNodePos ) )
-				{
-					checkingNodePos = neighborId;
-				}
 			}
-
 		}
 
 		node.m_amountEdgesConnected = 0;
 	}
 
-	
-	node.m_curFreeEdge = 0;
-
-	node.m_nodesInArea = 0;
-
-	node.m_isNodeInserted = false;
-
-	m_nodesInvolved--;
-
-	verifyAvailableIndex( checkingNodePos );
+	if ( isNodeInserted( nodePos ) )
+	{
+		resetNodeNotConn( nodePos );
+	}
 
 }
 
@@ -376,13 +316,13 @@ void Graph::updateAvailableIndex()
 
 	if ( m_freeNodePos > indexBorder )
 	{
-		m_freeNodePos = roadmap::capacity;
+		m_freeNodePos = roadmap::capacity - 1;
 		return;
 	}
 
-	uint16_t possiblePos= m_freeNodePos + 1;
+	uint16_t possiblePos = m_freeNodePos + 1;
 
-	while ( possiblePos < roadmap::capacity )
+	while ( possiblePos < ( indexBorder + 1 ) )
 	{
 
 		if ( ! isNodeInserted( possiblePos ) )
@@ -411,3 +351,15 @@ void Graph::verifyAvailableIndex( NodeId testingNodePos )
 	}
 
 }
+
+
+
+void Graph::resetNodeNotConn( NodeId nodePos )
+{
+	m_nodesStorage[ nodePos ].resetNotConn();
+
+	m_nodesInvolved--;
+
+	verifyAvailableIndex( nodePos );
+}
+

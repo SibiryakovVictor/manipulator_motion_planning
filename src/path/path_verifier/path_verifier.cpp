@@ -9,7 +9,7 @@ const float PathVerifier::threshold_config_change = 0.005f;
 
 NodeId PathVerifier::checkNodesForCollision( const PathTraversal & path )
 {
-    for ( uint16_t curPathElem = 0; curPathElem != path.getPathLength(); curPathElem++ )
+    for ( uint16_t curPathElem = 0; curPathElem != path.getPointsAmount(); curPathElem++ )
     {
         NodeId curNodePos = path.getPathElem( curPathElem ).point;
 
@@ -27,8 +27,6 @@ NodeId PathVerifier::checkNodesForCollision( const PathTraversal & path )
 
 PathElement PathVerifier::checkEdgesForCollision( const PathTraversal & path )
 {
-    auto pathLength = path.getPathLength();
-
     auto amountPointsCheck = 2.f;
     auto prevAmountPoints = 1.f;
 
@@ -93,75 +91,6 @@ bool PathVerifier::isSegmentValid( const config_space::Segment & segment, const 
     return true;
 }
 
-
-
-
-bool PathVerifier::isConfigValid( const config_space::Point & config )
-{
-    static config_space::Point prevConfig( config_space::PointData( { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX } ) );
-
-    m_manip.reset();
-
-    auto groupLinksId = m_manip.setConfigCurrentLink( config[ 0 ] );
-    m_manip.moveGroupCounter();
-
-    for ( auto curConfig = 1; curConfig != conf_space_dims; curConfig++ )
-    {
-        auto groupLinksId = m_manip.setConfigCurrentLink( config[ curConfig ] );
-
-        if ( std::fabsf( prevConfig[ curConfig ] - config[ curConfig ] ) < threshold_config_change ) 
-        {
-            m_manip.moveGroupCounter();
-            continue;
-        }
-
-        auto linkNextGroup = groupLinksId + m_manip.getLinkType( groupLinksId );
-
-        for ( uint16_t curObst = 0; curObst != obst::obst_amount; curObst++ )
-        {
-
-            const env::OBB & obstBody = m_obst.getBody( curObst );
-
-
-            if ( linkNextGroup == groupLinksId + 1 )
-            {
-                if ( m_collDetect.areObjectsCollided( obstBody, m_manip.getBodyCurLink() ) )
-                {
-                    prevConfig = config;
-
-                    return false;
-                }
-            }
-            else
-            {
-                if ( ! m_collDetect.areObjectsCollided( obstBody, m_manip.getBodyCurLink() ) )
-                {
-                    continue;
-                }
-
-                for ( auto curLinkId = groupLinksId; curLinkId != linkNextGroup; curLinkId++ )
-                {
-
-                    if ( m_collDetect.areObjectsCollided( obstBody, m_manip.getBody( curLinkId ) ) )
-                    {
-                        prevConfig = config;
-
-                        return false;
-                    }
-
-                }
-
-            }
-
-        }
-
-        m_manip.moveGroupCounter();
-    }
-
-
-    prevConfig = config;
-    return true;
-}
 
 
 

@@ -26,7 +26,7 @@ void RoadmapCorrector::removeConflictingEdge( NodeId nodePos, EdgeId edgePos )
 bool RoadmapCorrector::fixRoadmap()
 {
 
-    if ( ( roadmap::capacity - m_roadmap.m_graph.getNodesAmount() )
+    if ( ( ( roadmap::capacity - 2 ) - m_roadmap.m_graph.getNodesAmount() )
         > nodes_addition )
     {
         m_roadmap.fillRoadmapRandomNodes( nodes_addition );
@@ -34,7 +34,8 @@ bool RoadmapCorrector::fixRoadmap()
         return false;
     }
 
-    if (  m_attempts < attempts_limit )
+    if ( ( m_attempts < attempts_limit )
+        && ( ( m_roadmap.m_graph.getNodesAmount() + 2 ) > nodes_replacement ) )
     {
         m_attempts++;
 
@@ -54,24 +55,21 @@ bool RoadmapCorrector::fixRoadmap()
 
 
 
-
 void RoadmapCorrector::removeRandomNodes( uint16_t amountNodes )
 {
 
     while ( amountNodes != 0 )
     {
-
         NodeId removingNode = 0;
 
         do 
         {
 
-            removingNode = flt_op::getRandomFloat( 0, m_roadmap.m_graph.getNodesAmount() - 1 );
+            removingNode = flt_op::getRandomFloat( 2, m_roadmap.m_graph.getNodesAmount() - 1 );
 
-        } while ( ( removingNode == roadmap::start_node_pos ) || 
-            ( removingNode == roadmap::goal_node_pos ) );
+        } while ( ! m_roadmap.m_graph.isNodeInserted( removingNode ) );
 
-        removeConflictingNode( removingNode );
+        m_roadmap.m_graph.removeNode( removingNode );
 
         amountNodes--;
     }
@@ -83,11 +81,9 @@ void RoadmapCorrector::removeRandomNodes( uint16_t amountNodes )
 
 void RoadmapCorrector::reinitializeRoadmap()
 {
-
     m_roadmap.m_graph.reset();
 
-    m_roadmap.initializeRoadmap( m_start, m_goal );
-
+    m_roadmap.initializeRoadmap( m_roadmap.getStart(), m_roadmap.getGoal() );
 }
 
 
@@ -96,8 +92,4 @@ void RoadmapCorrector::reinitializeRoadmap()
 void RoadmapCorrector::reset()
 {
     m_attempts = 0;
-
-    m_start = m_roadmap.m_graph.getNodeConfig( 0 );
-
-    m_goal = m_roadmap.m_graph.getNodeConfig( 1 );
 }

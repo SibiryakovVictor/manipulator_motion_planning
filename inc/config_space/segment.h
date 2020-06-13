@@ -13,18 +13,17 @@ namespace config_space
 
     public:
 
-        explicit Segment() :
-            m_start(), m_end(), m_intervals{ 0.f }, m_maxInterPos( 0 )
+        explicit Segment()
         {}
 
         explicit Segment( const Point & start, const Point & end ) :
-            m_start( start ), m_end( end ), m_intervals{ 0.f }, m_maxInterPos( 0 )
+            m_start( start ), m_end( end )
         {
             calcIntervals();
         }
 
         explicit Segment( Point && start, Point && end ) :
-            m_start( start ), m_end( end ), m_intervals{ 0.f }, m_maxInterPos( 0 )
+            m_start( start ), m_end( end )
         {
             calcIntervals();
         }
@@ -42,9 +41,9 @@ namespace config_space
         Point m_start;
         Point m_end;
 
-        float m_intervals[ conf_space_dims ];
+        float m_intervals[ conf_space_dims ] { 0.f };
 
-        uint8_t m_maxInterPos;
+        uint8_t m_maxInterPos = 0;
 
         void calcIntervals();
 

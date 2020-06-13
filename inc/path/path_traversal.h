@@ -23,16 +23,7 @@ namespace motion_planner
 			explicit PathTraversal( const config_space::graph::INodesList & nodesList,
 				float step ) :
 				m_nodesList( nodesList ),
-
-				m_pathLength( 0 ),
-
-				m_step( step ),
-
-				m_curPoint( 0 ),
-
-				m_trajIt(),
-
-				m_path{}
+				m_step( step )
 			{
 				std::fill( m_path.sections, m_path.sections + path::length_limit, 
 					PathElement{ UINT16_MAX, UINT8_MAX } );
@@ -46,8 +37,8 @@ namespace motion_planner
 
 			Path & getPathStorage();
 
-			void setPathLength( uint16_t pathLength );
-			uint16_t getPathLength() const;
+			void setPointsAmount( uint16_t pathNodesAmount );
+			uint16_t getPointsAmount() const;
 
 			bool isPathPassed() const;
 
@@ -64,11 +55,11 @@ namespace motion_planner
 
 			Path m_path;
 
-			uint16_t m_pathLength;
+			uint16_t m_pointsAmount = 0;
 
-			float m_step;
+			float m_step = 0.f;
 
-			mutable PointId m_curPoint;
+			mutable PointId m_curPoint = 0;
 
 			mutable TrajectoryIterator m_trajIt;
 

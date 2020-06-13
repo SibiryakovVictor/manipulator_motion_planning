@@ -26,7 +26,9 @@ namespace config_space
             public:
 
                 explicit Astar()
-				{}
+				{
+					calcDistCoeffs();
+				}
 
 
                 uint16_t findShortestPath( 
@@ -95,10 +97,14 @@ namespace config_space
 
 				static const float cost_threshold_zero;
 
+				float m_distCoeff[ conf_space_dims ] { 0.f };
+
 				float calcCostNodesConfigs( const Point & config1, const Point & config2 );
 
 				uint16_t invertPath( motion_planner::path::Path & result,
-					motion_planner::path::PathElement (&prevInPath)[ roadmap::capacity ] );							   
+					motion_planner::path::PathElement (&prevInPath)[ roadmap::capacity ] );
+
+				void calcDistCoeffs();
 
             };
 

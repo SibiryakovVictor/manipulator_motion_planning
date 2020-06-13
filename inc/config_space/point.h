@@ -142,7 +142,7 @@ namespace config_space
 
 		static float calcDistNoSqrt( const Point & p1, const Point & p2 );
 
-		
+		friend bool operator==( const Point & p1, const Point & p2 );
 
 	private:
 
@@ -150,6 +150,7 @@ namespace config_space
 
 	};
 
+	bool operator==( const Point & p1, const Point & p2 );
 
 	void cvtDegsToRads( Point & p );
 

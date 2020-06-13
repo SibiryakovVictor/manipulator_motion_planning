@@ -40,10 +40,11 @@ namespace motion_planner
 
         bool isPathFound() const;
 
+        bool isPathPassed() const;
+
         config_space::Point getPointTraj();
 
         void resetPath();
-
 
     private:
 
@@ -63,6 +64,10 @@ namespace motion_planner
         bool m_isPathFound = false;
 
         bool isPathValid();
+
+        void setup( const config_space::Point & start, const config_space::Point & goal );
+
+        void setNewPath();
     };
 
 }

@@ -43,10 +43,11 @@ static const coll::CheckPair list_check_pairs[ pairsAmount ] = {
     { groups + 3, obsts + 2 }, { groups + 3, obsts + 3 },
     { groups + 3, obsts + 4 }, { groups + 3, obsts + 5 },
     { groups + 3, links + 1 }, { groups + 3, links + 2 },
-    { links + 10, links + 8 }
+    { links + 10, links + 4 }, { links + 10, links + 8 }
 };
 
 
 static const uint16_t list_config_change[ conf_space_dims + 1 ] = {
-    0, 2, 6, 10, 18, 19, 29, 38
+    0, 2, 6, 10, 18, 19, 28, 37
 };
+

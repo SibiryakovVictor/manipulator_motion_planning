@@ -14,7 +14,7 @@ void RoadmapController::fillRoadmapRandomNodes( uint16_t nodesAmount )
 
 	uint16_t amountAfterFilling = m_graph.getNodesAmount() + nodesAmount;
 
-	if ( amountAfterFilling > roadmap::capacity )
+	if ( amountAfterFilling > ( roadmap::capacity - 2 ) )
 	{
 		while ( true )
 		{
@@ -38,7 +38,7 @@ void RoadmapController::fillRoadmapRandomNodes(	uint16_t nodesAmount,
 
 	uint16_t amountAfterFilling = m_graph.getNodesAmount() + nodesAmount;
 
-	if ( amountAfterFilling > roadmap::capacity )
+	if ( amountAfterFilling > ( roadmap::capacity - 2 ) )
 	{
 		while ( true )
 		{
@@ -59,6 +59,9 @@ void RoadmapController::fillRoadmapRandomNodes(	uint16_t nodesAmount,
 void RoadmapController::initializeRoadmap( const config_space::Point & startConfig,   
 										   const config_space::Point & goalConfig )
 {
+	m_start = startConfig;
+
+	m_goal = goalConfig;
 
 	config_space::graph::Components componentsStatus;
 
@@ -210,3 +213,18 @@ void RoadmapController::reset()
 {
 	m_graph.reset();
 }
+
+
+
+const config_space::Point & RoadmapController::getStart() const
+{
+	return m_start;
+}
+
+
+
+const config_space::Point & RoadmapController::getGoal() const
+{
+	return m_goal;
+}
+

@@ -36,8 +36,6 @@ namespace config_space
 
             uint8_t getAmountFreeEdges( NodeId nodesPos ) const final;
 
-            uint16_t getNodesInArea( NodeId nodePos ) const final;
-
             bool isNodeInserted( NodeId nodePos ) const final;
 
             /* IEdgesList */
@@ -62,18 +60,13 @@ namespace config_space
 
                 NodeId edges[ roadmap::edges_limit ];
 
-                uint16_t m_curFreeEdge;
+                uint16_t m_curFreeEdge = 0;
 
-                uint16_t m_amountEdgesConnected;
+                uint16_t m_amountEdgesConnected = 0;
 
-                uint16_t m_nodesInArea;
+                bool m_isNodeInserted = false;
 
-                bool m_isNodeInserted;
-
-                Node() :
-
-                    m_config(), m_curFreeEdge( 0 ),
-                    m_amountEdgesConnected( 0 ), m_nodesInArea( 0 ), m_isNodeInserted( false )
+                Node()
                 {
                     std::fill( edges, edges + roadmap::edges_limit, UINT16_MAX );
 
@@ -81,7 +74,7 @@ namespace config_space
                         m_orderConnection + roadmap::edges_limit, UINT8_MAX );
                 }
 
-                void reset()
+                void resetFull()
                 {
 
                     std::fill( edges, edges + roadmap::edges_limit, UINT16_MAX );
@@ -93,10 +86,15 @@ namespace config_space
 
                     m_amountEdgesConnected = 0;
 
-                    m_nodesInArea = 0;
-
                     m_isNodeInserted = false;
 
+                }
+
+                void resetNotConn()
+                {
+                    m_curFreeEdge = 0;
+
+                    m_isNodeInserted = false;
                 }
 
             };
@@ -118,6 +116,8 @@ namespace config_space
             void verifyFreeEdgePos( NodeId nodePos, EdgeId testingEdge );
 
             void findFreeEdgePos( NodeId nodePos );
+
+            void resetNodeNotConn( NodeId nodePos );
 
         };
 

@@ -114,9 +114,9 @@ namespace settings
 
             Interval( flt_op::cvtDegToRad( -180.f ), flt_op::cvtDegToRad( 180.f ) ),
 
-            Interval( flt_op::cvtDegToRad( -14.f ), flt_op::cvtDegToRad( 40.f ) ),
+            Interval( flt_op::cvtDegToRad( -14.f ), flt_op::cvtDegToRad( 50.f ) ),
 
-            Interval( flt_op::cvtDegToRad( -40.f ), flt_op::cvtDegToRad( 14.f ) )
+            Interval( flt_op::cvtDegToRad( -50.f ), flt_op::cvtDegToRad( 14.f ) )
 
         } }
     );

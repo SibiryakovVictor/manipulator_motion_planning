@@ -1,12 +1,14 @@
 #include "config_space/graph/shortest_path_finder/a_star.h"
 
 #include "config_space/point.h"
+#include "intervals.h"
+
 
 
 using namespace config_space::graph::shortest_path;
 using namespace config_space::graph;
 
-const float Astar::cost_threshold_zero = 0.01f;
+const float Astar::cost_threshold_zero = 0.001f;
 
 
 
@@ -89,7 +91,18 @@ uint16_t Astar::findShortestPath( motion_planner::path::Path & pathData,
 float Astar::calcCostNodesConfigs( const config_space::Point & config1, 
 	const config_space::Point & config2 )
 {
-	return config_space::Point::calcDistNoSqrt( config1, config2 );
+	auto dim = 0;
+
+	return std::inner_product( config1.begin(), config1.end(), config2.begin(), 0.f,
+		[]( float arg, float result ){ return result + arg; },
+		[ this, &dim ](float arg1, float arg2) 
+		{
+			float diff = ( arg1 - arg2 ) * m_distCoeff[ dim ];
+
+			dim++;
+
+			return diff * diff; 
+		} );
 }
 
 
@@ -121,4 +134,15 @@ uint16_t Astar::invertPath( motion_planner::path::Path & result,
 	return pathLength;
 }
 
+
+
+void Astar::calcDistCoeffs()
+{
+	for ( uint16_t dim = 0; dim != conf_space_dims; dim++ )
+	{
+		const auto & interval = settings::realRangesMotion[ dim ];
+
+		m_distCoeff[ dim ] = std::fabsf( interval.gethb() - interval.getlb() );
+	}
+}
 
